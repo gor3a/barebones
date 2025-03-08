@@ -121,3 +121,13 @@ Modify the pet profile screen to include:
 - Include error handling and loading states
 - Consider edge cases and data validation
 - Focus on code quality and user experience 
+
+## New Features
+- Add a feature to register new users (Turn off email verification from supabase)
+- Add a feature to log in existing users
+- Add a feature to add new weight logs
+- Add a feature to add new body condition logs
+- Add a feature to add new vet visit logs
+- Implement the ability to add new pet profiles
+- Implement the ability to switch between pet profiles
+- Implement the ability to log out
