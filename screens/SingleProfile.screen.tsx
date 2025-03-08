@@ -108,8 +108,10 @@ export const SingleProfileScreen: React.FC<Props> = ({route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
+    paddingTop: 20,
+    paddingHorizontal: 16,
+    paddingBottom: 30,
   },
   loader: {
     flex: 1,

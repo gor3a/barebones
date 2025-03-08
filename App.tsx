@@ -7,6 +7,7 @@ import {ActivityIndicator} from "react-native";
 import {useAuth} from "@/hooks/useAuth";
 import {AuthScreen} from "@/screens/auth/Auth.screen";
 import Toast from "react-native-toast-message";
+import {StyleSheet} from "react-native";
 import {supabase} from "@/services/supabase";
 
 export type RootStackParamList = {
@@ -33,7 +34,7 @@ export default function App() {
                 component={PetsListScreen}
                 options={{
                   header: (props) => (
-                    <Appbar.Header>
+                    <Appbar.Header style={styles.appHeader}>
                       {props.navigation.canGoBack() && <Appbar.BackAction onPress={() => props.navigation.goBack()}/>}
                       <Appbar.Content title="Pet Profile"/>
                       <Appbar.Action icon="logout" onPress={() => supabase.auth.signOut()}/>
@@ -64,3 +65,11 @@ export default function App() {
 
   );
 }
+
+const styles = StyleSheet.create({
+  appHeader: {
+    backgroundColor: 'white',
+    shadowColor: 'transparent',
+    elevation: 1,
+  }
+})
