@@ -70,5 +70,4 @@ ios/builds/
 *.certSigningRequest
 *.p12
 *.app.dSYM.zip
-node_modules/.package-lock.json
 .env
