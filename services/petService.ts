@@ -1,71 +1,111 @@
-import { Pet } from '../types';
-
-// Mock data for development
-const mockPets: Pet[] = [
-  {
-    id: '1',
-    name: 'Max',
-    species: 'Dog',
-    breed: 'Golden Retriever',
-    age: 3,
-    created_at: new Date().toISOString(),
-    owner_id: '123'
-  },
-  {
-    id: '2',
-    name: 'Luna',
-    species: 'Cat',
-    breed: 'Siamese',
-    age: 2,
-    created_at: new Date().toISOString(),
-    owner_id: '123'
-  }
-];
+import {Pet} from '@/types';
+import {BodyCondition} from "@/constant";
+import {supabase} from "@/services/supabase";
 
 export const petService = {
   async getPets(): Promise<Pet[]> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return [...mockPets];
+    const {data: {user}, error: userError} = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User not logged in");
+
+    const {data, error} = await supabase
+      .from('pets')
+      .select('*')
+      .eq('owner_id', user.id)
+      .order('created_at', {ascending: false});
+
+    if (error) throw error;
+    return data as Pet[];
   },
 
   async getPetById(id: string): Promise<Pet | null> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const pet = mockPets.find(p => p.id === id);
-    return pet || null;
-  },
+    const {data, error} = await supabase
+      .from('pets')
+      .select(`
+    *,
+    body_condition_logs(*),
+    vet_visit_logs(*),
+    weight_logs(*)
+  `)
+      .eq('id', id)
+      .single();
 
-  async createPet(pet: Omit<Pet, 'id' | 'created_at'>): Promise<Pet> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const newPet: Pet = {
-      ...pet,
-      id: Math.random().toString(36).substr(2, 9),
-      created_at: new Date().toISOString()
-    };
-    mockPets.push(newPet);
-    return newPet;
-  },
-
-  async updatePet(id: string, updates: Partial<Pet>): Promise<Pet> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const index = mockPets.findIndex(p => p.id === id);
-    if (index === -1) {
-      throw new Error('Pet not found');
+    if (error) {
+      console.error(error);
+      return null;
     }
-    mockPets[index] = { ...mockPets[index], ...updates };
-    return mockPets[index];
+    return data as Pet;
   },
 
-  async deletePet(id: string): Promise<void> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const index = mockPets.findIndex(p => p.id === id);
-    if (index === -1) {
-      throw new Error('Pet not found');
+  async addPet(pet: {
+    name: string;
+    species: string;
+    breed?: string | null;
+    age: number | string;
+    owner_id: string;
+  }): Promise<Pet | null> {
+    const {data, error} = await supabase
+      .from('pets')
+      .insert([pet])
+      .single();
+
+    if (error) {
+      console.error(error);
+      return null;
     }
-    mockPets.splice(index, 1);
+    return data as Pet;
+  },
+  async addVetVisit(
+    petId: string,
+    notes: string,
+    date: Date
+  ): Promise<boolean> {
+    const {error} = await supabase.from('vet_visit_logs').insert([
+      {
+        pet_id: petId,
+        notes,
+        date: date.toISOString(),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    return true;
+  },
+  async addWeightLog(petId: string, weight: string, date: Date) {
+    const {error} = await supabase.from('weight_logs').insert([
+      {
+        pet_id: petId,
+        weight,
+        date: date.toISOString(),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      return false;
+    }
+    return true;
+  },
+  async addBodyConditionLog(
+    petId: string,
+    bodyCondition: BodyCondition,
+    date: Date
+  ) {
+    const {error} = await supabase.from('body_condition_logs').insert([
+      {
+        pet_id: petId,
+        body_condition: bodyCondition,
+        date: date.toISOString(),
+      },
+    ]);
+
+    if (error) {
+      console.error(error);
+      throw new Error(error.message);
+    }
+    return true;
   }
-}; 
+};

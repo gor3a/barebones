@@ -6,18 +6,10 @@ export interface Pet {
   age: number | string;
   created_at: any;
   owner_id: string;
-  logs_weight: Array<WeightLog>;
-  logs_bodycondition: Array<BodyConditionLog>;
-  logs_vet_visits: VetVisitLog[] | null;
-}
+  weight_logs: WeightLog[] | null;
+  body_condition_logs: BodyConditionLog[] | null;
+  vet_visit_logs: VetVisitLog[] | null;
 
-export interface Profile {
-  id: string;
-  user_id: string;
-  username: string;
-  full_name?: string | null | undefined;
-  avatar_url?: string;
-  updated_at?: any;
 }
 
 export interface WeightLog {
@@ -39,6 +31,6 @@ export type LogType = 'weight' | 'body' | 'vet' | any;
 export interface VetVisitLog {
   id: string;
   pet_id: string;
-  notes: string | null;
+  notes: string;
   date: string;
-} 
+}
