@@ -131,3 +131,19 @@ Modify the pet profile screen to include:
 - Implement the ability to add new pet profiles
 - Implement the ability to switch between pet profiles
 - Implement the ability to log out
+
+## Additional Dependencies
+- @supabase/supabase-js
+- react-native-paper
+- @react-native-async-storage/async-storage
+- @react-navigation/native-stack
+- react-native-paper-select
+- react-native-toast-message
+
+## Some points I was want to implement but didn't wrote in requirements
+- Validation for all the forms
+- Unit tests for all the components
+- Add a feature to edit the logs
+- Add a feature to delete the logs
+- Add a feature to edit the pet profile
+- Add a feature to delete the pet profile
