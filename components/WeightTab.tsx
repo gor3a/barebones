@@ -6,13 +6,13 @@ import {TabsProps} from "@/types/TabsProps";
 import Toast from "react-native-toast-message";
 
 export const WeightTab = ({pet, showModal, setShowModal, styles}: TabsProps) => {
-  const [weight, setWeight] = React.useState<string | null>(null);
+  const [weight, setWeight] = React.useState<string>('0');
 
   const handleAddWeight = async () => {
     try {
       if (!weight) throw new Error('Weight are required');
       await petService.addWeightLog(pet.id, weight, new Date());
-      setWeight(null);
+      setWeight('0');
       setShowModal(false);
     } catch (err: Error | any) {
       setShowModal(false);
@@ -54,7 +54,7 @@ export const WeightTab = ({pet, showModal, setShowModal, styles}: TabsProps) => 
         <TextInput
           label="Weight"
           keyboardType='numeric'
-          value={weight || ''}
+          value={weight || '0'}
           onChangeText={setWeight}>
         </TextInput>
 
@@ -64,7 +64,7 @@ export const WeightTab = ({pet, showModal, setShowModal, styles}: TabsProps) => 
             mode="contained"
             style={styles.saveButton}
             onPress={handleAddWeight}
-            disabled={!weight}
+            disabled={weight === '0' || !weight}
           >
             Save Weight
           </Button>

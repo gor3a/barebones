@@ -6,6 +6,8 @@ import {petService} from "@/services/petService";
 import {Pet} from "@/types";
 import {NativeStackNavigationProp} from "@react-navigation/native-stack";
 import {RootStackParamList} from "@/App";
+import Toast from "react-native-toast-message";
+import {supabase} from "@/services/supabase";
 
 interface AddPetProps {
   showAddPetModal: boolean;
@@ -16,13 +18,20 @@ const AddPet = ({showAddPetModal, setShowAddPetModal}: AddPetProps) => {
   const [name, setName] = useState('');
   const [species, setSpecies] = useState('');
   const [breed, setBreed] = useState('');
-  const [age, setAge] = useState('');
+  const [age, setAge] = useState('0');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const handleAddPet = async () => {
     setLoading(true);
-    setError('');
+    const user = await supabase.auth.getUser();
+    if (!user.data.user?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'User not found',
+      });
+      setLoading(false);
+      return;
+    }
 
     try {
       const pet = {
@@ -30,17 +39,21 @@ const AddPet = ({showAddPetModal, setShowAddPetModal}: AddPetProps) => {
         species,
         breed,
         age,
-        owner_id: 'ed13bd43-78c4-4cca-ae85-008c9fe67597',
+        owner_id: user.data.user.id,
       }
-      const result = await petService.addPet(pet);
+      await petService.addPet(pet);
       setName('');
       setSpecies('');
       setBreed('');
       setAge('');
       setShowAddPetModal(false);
-    } catch (err) {
-      setError('Failed to add pet');
+    } catch (err: Error | any) {
+      Toast.show({
+        type: 'error',
+        text1: err?.message || 'Error adding pet',
+      })
     } finally {
+      setShowAddPetModal(false);
       setLoading(false);
     }
   };
@@ -53,7 +66,7 @@ const AddPet = ({showAddPetModal, setShowAddPetModal}: AddPetProps) => {
         contentContainerStyle={styles.modalContent}
       >
         <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>New Vet Visit</Text>
+          <Text style={styles.modalTitle}>New Pet</Text>
         </View>
 
         <TextInput
@@ -76,7 +89,9 @@ const AddPet = ({showAddPetModal, setShowAddPetModal}: AddPetProps) => {
         />
         <TextInput
           label="Age"
+          keyboardType='numeric'
           value={age}
+          defaultValue="0"
           onChangeText={setAge}
           style={styles.input}
         />
@@ -88,7 +103,7 @@ const AddPet = ({showAddPetModal, setShowAddPetModal}: AddPetProps) => {
             onPress={handleAddPet}
             disabled={loading}
           >
-            Save Visit
+            Save Pet
           </Button>
           <Button
             mode="outlined"
@@ -107,19 +122,17 @@ export const PetsListScreen = () => {
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddPetModal, setShowAddPetModal] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleRefresh = async () => {
-    setRefreshing(true);
     try {
       const data = await petService.getPets();
       setPets(data);
     } catch (err) {
-      setError('Failed to refresh pets');
-    } finally {
-      setRefreshing(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to load pets',
+      })
     }
   };
 
@@ -136,7 +149,10 @@ export const PetsListScreen = () => {
         const data = await petService.getPets();
         setPets(data);
       } catch (err) {
-        setError('Failed to load pets');
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to load pets',
+        })
       } finally {
         setLoading(false);
       }
@@ -145,10 +161,6 @@ export const PetsListScreen = () => {
 
   if (loading) {
     return <ActivityIndicator style={styles.loader}/>;
-  }
-
-  if (error) {
-    return <List.Subheader style={styles.error}>{error}</List.Subheader>;
   }
 
   return (
